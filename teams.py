@@ -7,14 +7,16 @@ class team:
         self.offTarget = 0
         self.goalsFor = 0
         self.goalsAgainst = 0
+        self.goalD = 0 
         self.fifaRank = 0
         self.matchesPlayed = 0
+        self.winPCT = 0
 
 class match:
-    def __init__(self):
-        self.teamOne = ''
-        self.teamTwo = ''
-        self.winner = ''
+    def __init__(self, teamOne, teamTwo, winner):
+        self.teamOne = teamOne
+        self.teamTwo = teamTwo
+        self.winner = winner
     
 class rankingTable:
     def __init__(self):

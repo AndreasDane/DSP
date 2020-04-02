@@ -1,0 +1,20 @@
+Austria	Hungary	Hungary
+Austria	Portugal	Draw
+Belgium	Republic of Ireland	Belgium
+Belgium	Italy	Italy
+Croatia	Turkey	Croatia
+Croatia	Czech Republic	Draw
+Czech Republic	Spain	Spain
+England	Russia	Draw
+England	Wales	England
+Germany	Ukraine	Germany
+Germany	Poland	Draw
+Hungary	Iceland	Draw
+Iceland	Portugal	Draw
+Italy	Sweden	Italy
+Northern Ireland	Poland	Poland
+Northern Ireland	Ukraine	Northern Ireland
+Republic of Ireland	Sweden	Draw
+Russia	Slovakia	Slovakia 
+Slovakia	Wales	Wales
+Spain	Turkey	Spain

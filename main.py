@@ -1,7 +1,10 @@
-import csv
+
 from tkinter import *
 from tkinter.ttk import *
+from ml import *
 from teams import *
+import csv
+
 
 ##################### load #####################
 
@@ -9,8 +12,12 @@ countries = ['Austria', 'Belgium', 'Croatia', 'Czech Republic', 'England', 'Germ
 fifaRanks = [10, 2, 27, 30, 11, 4, 20, 34, 12, 25, 27, 8, 33, 29, 24, 6, 35, 18, 19, 26]
 
 teamList = []
+matchListOne = []
+matchListTwo = []
+matchListThree = []
 
-def load():
+
+def loadTeams():
     for x in countries:
         teamList.append(team(x))
     
@@ -19,6 +26,7 @@ def load():
             reader = csv.reader(csvfile)
             row = 1
 
+            wins = 0
             count = 0
             
             for row in reader:
@@ -32,49 +40,79 @@ def load():
                     teamList[x].goalsFor += int(column[6])
                     teamList[x].goalsAgainst += int(column[7])
         
-                    
+                    if column[6] > column[7]:
+                        wins += 1
+                    if column[6] == column[7]:
+                        wins += 0.5
+  
                     print(column[1], column[2], column[3], column[4], column[5], column[6], column[7])
+                    print(wins)
 
             teamList[x].matchesPlayed = count
             teamList[x].fifaRank = fifaRanks[x]
+            teamList[x].winPCT = wins/teamList[x].matchesPlayed
+                    
             rankView.insert('', 'end', text=x, values=(teamList[x].fifaRank, teamList[x].name, ""))
 
-### Insertion sort ###
+def loadMatches():
 
-            
+    gameCSVs = ["gameone", "gametwo", "gamethree"]
+
+    matchListOne.clear()
+    matchListTwo.clear()
+    matchListThree.clear()
+
+    for x in range(len(gameCSVs)):
+        with open('Match Data\\' + gameCSVs[x] + '.csv', "r") as csvfile:
+            reader = csv.reader(csvfile)
+
+        
+            for row in reader:
+                for column in reader:
+
+                    if gameCSVs[x] == "gameone":
+                        matchListOne.append(match(column[0], column[1], column[2]))
+                    if gameCSVs[x] == "gametwo":
+                        matchListTwo.append(match(column[0], column[1], column[2]))
+                    if gameCSVs[x] == "gamethree":
+                        matchListThree.append(match(column[0], column[1], column[2]))
+                        
+                    print(column[0], column[1], column[2])
+
+
 ##################### Main Menu GUI #####################
 mainMenu = Tk()
 mainMenu.title("Main Menu")
 mainMenu.resizable(False, False)
 
 # Button Creations
-loadTeamsBt = Button(mainMenu, text = "Load Team Data", command = load)
-loadTrainBt = Button(mainMenu, text = "Load Training Matches") 
-loadTestBt = Button(mainMenu, text = "Load Test Matches")
+loadTeamsBt = Button(mainMenu, text = "Load Team Data", command = loadTeams)
+loadMatchesBt = Button(mainMenu, text = "Load Matches", command = loadMatches) 
 generateBt = Button(mainMenu, text = "Generate Ranking")
-encodeBt = Button(mainMenu, text = "Encode")
+encodeBt = Button(mainMenu, text = "Encode", command= lambda: encode(teamList))
 
 # Button Placement
 loadTeamsBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = N)
-loadTrainBt.grid(row = 2, column = 0, pady = 50, padx = 2)
-loadTestBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = S)
+loadMatchesBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = S)
 encodeBt.grid(row = 5, column = 0, pady = 50, padx = 2, sticky = N)
 generateBt.grid(row = 5, column = 0, pady = 50, padx = 2, sticky = S)
 
 # Rank Table
-rankView = Treeview(mainMenu, height = 20)
+rankColumns = ('Network Rank', 'FIFA Rank', 'Team Name', 'Rank Score')
+rankView = Treeview(mainMenu, height = 20, columns=rankColumns)
+
 rankView['columns'] = ("one","two","three")
 rankView.column("#0", width=55, minwidth=55, anchor=CENTER)
 rankView.column("one", width=55, minwidth=55, anchor=CENTER)
 rankView.column("two", width=400, minwidth=200)
 rankView.column("three", width=80, minwidth=50)
 
-
-
 rankView.heading("#0",text="Network \nRank")
 rankView.heading("one", text="FIFA \nRank")
 rankView.heading("two", text="Team Name")
 rankView.heading("three", text="Rank Score")
+
+
 
 rankView.grid(row = 2, column = 1, pady = 50, padx = 2, rowspan = 4)
 
@@ -116,10 +154,6 @@ yscrollbar.configure(command=predictView.yview)
 # Table Insert
 for x in range(60):
     predictView.insert('', 'end', text="Republic of Ireland " + str(x), values=("abc", "cde", "fgh"))
-
-
-
-
 
 predictMenu.mainloop()
 mainMenu.mainloop()
