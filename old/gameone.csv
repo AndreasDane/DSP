@@ -1,0 +1,31 @@
+Group,Team 1,Team 2 ,Winner
+F,Austria,Hungary,Hungary
+E,Belgium,Italy,Italy
+D,Croatia,Turkey,Croatia
+D,Czech Republic,Spain,Spain
+B,England,Russia,Draw
+C,Germany,Ukraine,Germany
+F,Iceland,Portugal,Draw
+C,Northern Ireland,Poland,Poland
+E,Republic of Ireland,Sweden,Draw
+B,Slovakia,Wales,Wales
+F,Austria,Iceland,Iceland 
+E,Belgium,Sweden,Belgium
+D,Croatia,Spain,Croatia 
+D,Czech Republic,Turkey,Turkey 
+B,England,Slovakia,Draw
+C,Germany,Northern Ireland,Germany
+F,Hungary,Portugal,Draw
+E,Italy,Republic of Ireland,Republic of Ireland
+C,Poland,Ukraine,Poland
+B,Russia,Wales,Wales
+F,Austria,Portugal,Draw
+E,Belgium,Republic of Ireland,Belgium
+D,Croatia,Czech Republic,Draw
+B,England,Wales,England
+C,Germany,Poland,Draw
+F,Hungary,Iceland,Draw
+E,Italy,Sweden,Italy
+C,Northern Ireland,Ukraine,Northern Ireland
+B,Russia,Slovakia,Slovakia 
+D,Spain,Turkey,Spain

@@ -9,14 +9,18 @@ class team:
         self.goalsAgainst = 0
         self.goalD = 0 
         self.fifaRank = 0
+        self.group = ''
         self.matchesPlayed = 0
         self.winPCT = 0
+        self.rating = 0
+        self.form = []
 
 class match:
-    def __init__(self, teamOne, teamTwo, winner):
+    def __init__(self, group, teamOne, teamTwo, winner):
         self.teamOne = teamOne
         self.teamTwo = teamTwo
         self.winner = winner
+        self.group = group
     
 class rankingTable:
     def __init__(self):
