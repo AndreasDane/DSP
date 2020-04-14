@@ -1,31 +1,49 @@
-
+import tkinter as tk
 from tkinter import *
 from tkinter.ttk import *
 from ml import *
 from teams import *
 import csv
+import random
 
 
-##################### load #####################
+##################### loading #####################
 
+# Initialize variables
 countries = ['Austria', 'Belgium', 'Croatia', 'Czech Republic', 'England', 'Germany', 'Hungary', 'Iceland', 'Italy', 'Northern Ireland', 'Poland', 'Portugal', 'Republic of Ireland', 'Russia', 'Slovakia', 'Spain', 'Sweden', 'Turkey', 'Ukraine', 'Wales']
 fifaRanks = [10, 2, 27, 30, 11, 4, 20, 34, 12, 25, 27, 8, 33, 29, 24, 6, 35, 18, 19, 26]
 groupID = ['F','E','D','D','B','C','F','F','E','C','C','F', 'E', 'B', 'B', 'D', 'E', 'D', 'C', 'B']
 
-
+# unsorted team and match lists
 teamList = []
 matchList = []
 
+# sorted team and match lists
 trainList = []
 testList = []
 trainMatches = []
 testMatches = []
 
-trainInputs = np.zeros((16,5))
-trainOutputs = np.zeros((16,1))
+# https://tekrecipes.com/2019/04/20/tkinter-treeview-enable-sorting-upon-clicking-column-headings/
+# Function to sort a column by number value
+def treeview_sort_column(tv, col, reverse):
+    l = [(tv.set(k, col), k) for k in tv.get_children('')] # creates copy of the column
+    l.sort(key=lambda t: int(t[0]), reverse=reverse) # sorts column by int
+
+    for index, (val, k) in enumerate(l):
+        tv.move(k, '', index)
+
+    tv.heading(col, command=lambda: treeview_sort_column(tv, col, not reverse))
 
 
+# Function to initialize team objects and assign attributes from CSV. 
 def loadTeams():
+
+    for i in rankView.get_children():
+        rankView.delete(i)
+
+    teamList.clear()
+    
     for x in countries:
         teamList.append(team(x))
     
@@ -42,7 +60,6 @@ def loadTeams():
                     count += 1
 
                     teamList[x].possession += int(column[2])
-                    teamList[x].shots += int(column[3])
                     teamList[x].onTarget += int(column[4])
                     teamList[x].offTarget += int(column[5])
                     teamList[x].goalsFor += int(column[6])
@@ -60,13 +77,17 @@ def loadTeams():
             teamList[x].fifaRank = fifaRanks[x]
             teamList[x].group = groupID[x]
             #teamList[x].winPCT = wins/teamList[x].matchesPlayed
-                    
-            rankView.insert('', 'end', text=x, values=(teamList[x].fifaRank, teamList[x].name, ""))
 
+            rankID = rankView.insert('', 'end', iid = teamList[x].name, values=(0, teamList[x].fifaRank, teamList[x].name, 0))
+            print(rankID)
 
     sortTeams(teamList)
 
+# Function to load matches from CSV and initialize objects and assign attributes from CSV.
 def loadMatches():
+
+    for i in predictView.get_children():
+        predictView.delete(i)
 
     matchList.clear()
 
@@ -77,130 +98,51 @@ def loadMatches():
         
         for row in reader:
             for column in reader:
-                matchList.append(match(str(column[0]), column[1], column[2], column[3]))
+                
                                           
+                matchID = predictView.insert('', 'end', values=(column[1], column[2] , 0, column[3]))
+                print(matchID)
+                matchList.append(match(str(column[0]), column[1], column[2], column[3], matchID))
+
                 print(column[0], column[1], column[2], column[3])
 
     sortMatches(matchList)
 
-
+# Function to sort teams for training and testing. 
 def sortTeams(teamList):
     for x in range(len(teamList)):
-        if teamList[x].group == 'F':
+        if str(teamList[x].group) == testGroup.get():
             testList.append(teamList[x])
         else:
             trainList.append(teamList[x])
 
+# Function to sort matches for training and testing.
 def sortMatches(matchList):
     for x in range(len(matchList)):
-        if matchList[x].group == 'F':
+        if str(matchList[x].group) == testGroup.get():
             testMatches.append(matchList[x])
         else:
             trainMatches.append(matchList[x])
-            
-def simMatches(teamList, matches):
-    total = len(matches)
-    correct = 0
-    perc = 0
+
+
+# Function to edit training/testing settings.
+def ViewSettingsPrompt():
+    settings = tk.Toplevel(mainMenu)
+
+
+    instructionLabel = tk.Label(settings, text = "The current testing group: " + str(testGroup.get()))
+
+    instructionLabel.pack(anchor = N)
+
     
-    for x in range(len(trainMatches)):
-        teamOne = 0
-        teamTwo = 0
-        predictedWinner = ''
 
-        for y in range(len(teamList)):
-            if teamList[y].name == trainMatches[x].teamOne:
-                teamOne = teamList[y]
-            if teamList[y].name == trainMatches[x].teamTwo:
-                teamTwo = teamList[y]
+def helpPrompt():
+    helpInfo = tk.Toplevel(mainMenu)
 
-        if abs((teamOne.rating) - (teamTwo.rating)) < 0.0001:
-            predictedWinner = "Draw"
-            #print("DRAW PREDICTED!")
-        elif teamOne.rating > teamTwo.rating:
-            predictedWinner = teamOne.name
-            #print("PREDICTED WINNER: " + predictedWinner)
-        else:
-            predictedWinner = teamTwo.name
-            #print("PREDICTED WINNER: " + predictedWinner)
+    helpLabel = tk.Label(helpInfo, text = "Help")
 
-        #print("REAL WINNER: " + trainMatches[x].winner)
 
-        if predictedWinner == trainMatches[x].winner:
-            correct += 1           
-           
-
-    perc = (correct / total)  *  100
-    print(perc)
-
-def simFIFAMatches(teamList, matches):
-    total = len(matches)
-    correct = 0
-    perc = 0
     
-    for x in range(len(trainMatches)):
-        teamOne = 0
-        teamTwo = 0
-        predictedWinner = ''
-
-        for y in range(len(teamList)):
-            if teamList[y].name == trainMatches[x].teamOne:
-                teamOne = teamList[y]
-            if teamList[y].name == trainMatches[x].teamTwo:
-                teamTwo = teamList[y]
-
-        if abs((teamOne.fifaRank) - (teamTwo.fifaRank)) <= 2:
-            predictedWinner = "Draw"
-            print("DRAW PREDICTED!")
-        elif teamOne.fifaRank < teamTwo.fifaRank:
-            predictedWinner = teamOne.name
-            print("PREDICTED WINNER: " + predictedWinner)
-        else:
-            predictedWinner = teamTwo.name
-            print("PREDICTED WINNER: " + predictedWinner)
-
-        print("REAL WINNER: " + trainMatches[x].winner)
-
-        if predictedWinner == trainMatches[x].winner:
-            correct += 1           
-           
-
-    perc = (correct / total)  *  100
-    print(perc)
-
-
-def training(trainList):
-
-    model = create_model()
-
-    for x in range(len(trainList)):
-        trainList[x].form = resultSearch(trainList[x].name, matchList)
-
-    for y in range(len(trainList)):
-        trainInputs[y][0] = trainList[y].possession
-        trainInputs[y][1] = trainList[y].shots
-        trainInputs[y][2] = trainList[y].onTarget
-        trainInputs[y][3] = trainList[y].offTarget
-        trainInputs[y][4] = trainList[y].goalD
-
-
-    for g in range(3):
-
-        for i in range(len(trainList)):
-            trainOutputs[i][0] = trainList[i].form[g]
-
-        model.fit(trainInputs, trainOutputs, epochs = 100)
-
-
-    ratings = model.predict(trainInputs)
-
-    for n in range(len(trainList)):
-        trainList[n].rating = ratings[n]
-        
-
-    print(ratings)
-    simMatches(trainList, trainMatches)
-
 
     
 ##################### Main Menu GUI #####################
@@ -208,36 +150,59 @@ mainMenu = Tk()
 mainMenu.title("Main Menu")
 mainMenu.resizable(False, False)
 
+menubar = Menu(mainMenu)
+mainMenu.config(menu=menubar)
+
+fileMenu = Menu(menubar)
+fileMenu.add_command(label="Exit", command=quit)
+menubar.add_cascade(label="File", menu=fileMenu)
+
+helpMenu = Menu(menubar)
+helpMenu.add_command(label="Help", command=helpPrompt)
+menubar.add_cascade(label="Help", menu=helpMenu)
+
+testGroup = tk.StringVar()
+testGroup.set(random.choice(groupID))
+
 # Button Creations
 loadTeamsBt = Button(mainMenu, text = "Load Team Data", command = loadTeams)
 loadMatchesBt = Button(mainMenu, text = "Load Matches", command = loadMatches) 
-generateBt = Button(mainMenu, text = "Training", command = lambda: training(trainList))
+trainingBt = Button(mainMenu, text = "Training", command = lambda: training(trainList, trainMatches, rankView, predictView, predictLabel))
+testingBt = Button(mainMenu, text = "Testing", command = lambda: testing(testList, testMatches, rankView, predictView, predictLabel))
 encodeBt = Button(mainMenu, text = "Encode", command= lambda: encode(teamList))
+editSettingsBt = Button(mainMenu, text="Settings", command = ViewSettingsPrompt)
+generateBt = Button(mainMenu, text="Generate", command = lambda: generate(teamList, matchList, rankView, predictView, predictLabel))
 
 # Button Placement
 loadTeamsBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = N)
 loadMatchesBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = S)
-encodeBt.grid(row = 5, column = 0, pady = 50, padx = 2, sticky = N)
-generateBt.grid(row = 5, column = 0, pady = 50, padx = 2, sticky = S)
+editSettingsBt.grid(row = 3, column = 0, pady=50, padx=2, sticky = N)
+encodeBt.grid(row = 3, column = 0, pady = 50, padx = 2, sticky = S)
+trainingBt.grid(row = 4, column = 0, pady = 50, padx = 2, sticky = N)
+testingBt.grid(row = 4, column = 0, pady = 50, padx = 2, sticky = S)
+generateBt.grid(row = 4, column=2, pady=50,padx=2, sticky = S)
+
+
 
 # Rank Table
-rankColumns = ('Network Rank', 'FIFA Rank', 'Team Name', 'Rank Score')
-rankView = Treeview(mainMenu, height = 20, columns=rankColumns)
+columns = ('Network Rank', 'FIFA Rank', 'Team Name', 'Rank Score')
+rankView = Treeview(mainMenu, height = 20, columns=columns)
 
-rankView['columns'] = ("one","two","three")
-rankView.column("#0", width=55, minwidth=55, anchor=CENTER)
-rankView.column("one", width=55, minwidth=55, anchor=CENTER)
-rankView.column("two", width=400, minwidth=200)
-rankView.column("three", width=80, minwidth=50)
+rankView['show'] = 'headings'
+rankView.column("Network Rank", width=65, minwidth=55, anchor=CENTER)
+rankView.column("FIFA Rank", width=65, minwidth=55, anchor=CENTER)
+rankView.column("Team Name", width=400, minwidth=200)
+rankView.column("Rank Score", width=120, minwidth=50)
 
-rankView.heading("#0",text="Network \nRank")
-rankView.heading("one", text="FIFA \nRank")
-rankView.heading("two", text="Team Name")
-rankView.heading("three", text="Rank Score")
+rankView.heading("Network Rank",text="Network \nRank", command=lambda : treeview_sort_column(rankView, "Network Rank", False))
+rankView.heading("FIFA Rank", text="FIFA \nRank", command=lambda : treeview_sort_column(rankView, "FIFA Rank", False))
+rankView.heading("Team Name", text="Team Name")
+rankView.heading("Rank Score", text="Current Rank Score", command=lambda : treeview_sort_column(rankView, "Rank Score", False))
 
 
 
-rankView.grid(row = 2, column = 1, pady = 50, padx = 2, rowspan = 4)
+# Places rank table
+rankView.grid(row = 2, column = 1, pady = 50, padx = 2, rowspan = 5)
 
 
 ##################### Prediction Menu GUI #####################
@@ -245,28 +210,34 @@ predictMenu = Tk()
 predictMenu.title("Predictions Menu")
 predictMenu.resizable(False, False)
 
+
 # Prediction Widgets
-predictRateLabel = Label(predictMenu, text="Predict Rate: \nX%")
+predictLabel = Label(predictMenu, text="Predict Rate: ")
 
 # Prediction Placement
-predictRateLabel.grid(row=0,column =0, pady = 50, padx = 2)
+predictLabel.grid(row=0,column =0, pady = 50, padx = 2)
 
 
 yscrollbar = Scrollbar(predictMenu, orient='vertical')
 
 # Prediction Table
-predictView = Treeview(predictMenu, height = 10, yscrollcommand = yscrollbar.set)
-predictView['columns'] = ("one","two","three")
-predictView.column("#0", width=150, minwidth=150, anchor=W)
-predictView.column("one", width=150, minwidth=150, anchor=W)
-predictView.column("two", width=150, minwidth=150, anchor=W)
-predictView.column("three", width=150, minwidth=150, anchor=W)
+predictColumns = ("Team One", "Team Two", "Predicted Result", "Real Result")
+
+predictView = Treeview(predictMenu, height = 10, yscrollcommand = yscrollbar.set, columns=predictColumns)
 
 
-predictView.heading("#0",text="Team One")
-predictView.heading("one", text="Team Two")
-predictView.heading("two", text="Predicted Result")
-predictView.heading("three", text="Real Result")
+
+predictView['show'] = 'headings'
+predictView.column("Team One", width=150, minwidth=150, anchor=W)
+predictView.column("Team Two", width=150, minwidth=150, anchor=W)
+predictView.column("Predicted Result", width=150, minwidth=150, anchor=W)
+predictView.column("Real Result", width=150, minwidth=150, anchor=W)
+
+
+predictView.heading("Team One",text="Team One")
+predictView.heading("Team Two", text="Team Two")
+predictView.heading("Predicted Result", text="Predicted Result")
+predictView.heading("Real Result", text="Real Result")
 
 
 predictView.grid(row = 0, column = 1, pady = 50, padx = 2, rowspan = 4)
@@ -274,9 +245,7 @@ yscrollbar.grid(row=0, column=2, sticky='ns', rowspan = 4, pady = 50, padx = 2)
 yscrollbar.configure(command=predictView.yview)
 
 
-# Table Insert
-for x in range(60):
-    predictView.insert('', 'end', text="Republic of Ireland " + str(x), values=("abc", "cde", "fgh"))
+
 
 
 mainMenu.mainloop()
