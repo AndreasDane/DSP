@@ -44,6 +44,15 @@ def treeview_sort_column_float(treeview, col, reverse):
 
     treeview.heading(col, command=lambda: treeview_sort_column_float(treeview, col, not reverse))
 
+def treeview_sort_column_str(treeview, col, reverse):
+    tempList = [(treeview.set(item, col), item) for item in treeview.get_children('')] # creates copy of the column
+    tempList.sort(reverse=reverse) # sorts column alphabetically
+
+    for index, (val, item) in enumerate(tempList): # nnumbers sorted column
+        treeview.move(item, '', index) # moves column in treeview
+
+    treeview.heading(col, command=lambda: treeview_sort_column_str(treeview, col, not reverse))
+
 
 # Function to initialize team objects and assign attributes from CSV. 
 def loadTeams():
@@ -59,6 +68,7 @@ def loadTeams():
     for x in countries:
         teamList.append(team(x))
 
+    
     
     for x in range(len(countries)):
         with open('Team Data\\' + countries[x] + '.csv', "r") as csvfile:
@@ -181,13 +191,18 @@ def ViewSettingsPrompt():
         label1.pack(anchor=N)
         label2.pack(anchor=N)
 
-    
-
 def helpPrompt():
     helpInfo = tk.Toplevel(mainMenu)
+    
+    trainingHelp = tk.Label(helpInfo, text = "\nTraining Help \n 1. Load BOTH team and match data. \n2. Select Encode button to encode previous match statistics for each team. \n3. Then select Training button. \n4. Once completed, the rank and match window will be updated to reflect the randomly selected teams and their matches used in training the model.")
+    testingHelp = tk.Label(helpInfo, text = "\nTesting Help \n 1. After training has been performed. Select Testing button. \n3. Once testing is completed, the rank and match window will be updated to reflect the randomly selected test group and their matches.")
+    fifaRankingHelp = tk.Label(helpInfo, text = "\nFIFA Ranking Help \n1. Load BOTH team and match data. \n2. Select Simulate with FIFA button. \n3. Once completed, the match window will display a predicted winner based on the June 2016 FIFA Rankings.")
+    generateHelp = tk.Label(helpInfo, text = "\nGenerate Ranking Help \n1. AFTER a model has been trained following the steps listed in Training Help, select the Generate button. \n2. The rank and match menu will update to display ALL teams and matches after they have all been ran through the trained model.")
 
-    helpLabel = tk.Label(helpInfo, text = "Help")
-
+    trainingHelp.pack(anchor=N)
+    testingHelp.pack(anchor=N)
+    fifaRankingHelp.pack(anchor=N)
+    generateHelp.pack(anchor=N)
 
 # creates new random split of data
 def initializeTraining():
@@ -229,7 +244,7 @@ simFifaBt = Button(mainMenu, text="Simulate with FIFA", command = lambda: simFIF
 
 # Button Placement
 loadTeamsBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = N)
-loadMatchesBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = S)
+loadMatchesBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = S)    
 editSettingsBt.grid(row = 3, column = 0, pady=50, padx=2, sticky = N)
 encodeBt.grid(row = 3, column = 0, pady = 50, padx = 2, sticky = S)
 trainingBt.grid(row = 4, column = 0, pady = 50, padx = 2, sticky = N)
@@ -243,19 +258,20 @@ simFifaBt.grid(row=4, column=2, pady=50,padx=2, sticky=N)
 columns = ('Network Rank', 'EURO Rank', 'FIFA Rank', 'Team Name', 'Group', 'Rank Score')
 rankView = Treeview(mainMenu, height = 20, columns=columns)
 
-rankView['show'] = 'headings'
-rankView.column("Network Rank", width=65, minwidth=55, anchor=CENTER)
-rankView.column("EURO Rank", width = 65, minwidth=55, anchor=CENTER)
-rankView.column("FIFA Rank", width=65, minwidth=55, anchor=CENTER)
-rankView.column("Team Name", width=400, minwidth=200)
-rankView.column("Group", width=65, anchor=CENTER)
-rankView.column("Rank Score", width=120, minwidth=50)
 
-rankView.heading("Network Rank",text="Network \nRank", command=lambda : treeview_sort_column_int(rankView, "Network Rank", False))
-rankView.heading("EURO Rank", text="EURO \nRank", command = lambda: treeview_sort_column_int(rankView, "EURO Rank", False))
-rankView.heading("FIFA Rank", text="FIFA \nRank", command=lambda : treeview_sort_column_int(rankView, "FIFA Rank", False))
-rankView.heading("Team Name", text="Team Name")
-rankView.heading("Group", text="Group")
+rankView['show'] = 'headings'
+rankView.column("Network Rank", width=85, anchor=CENTER)
+rankView.column("EURO Rank", width = 70, anchor=CENTER)
+rankView.column("FIFA Rank", width=70, anchor=CENTER)
+rankView.column("Team Name", width=400, anchor=CENTER)
+rankView.column("Group", width=45, anchor=CENTER)
+rankView.column("Rank Score", width=120)
+
+rankView.heading("Network Rank",text="Network Rank", command=lambda : treeview_sort_column_int(rankView, "Network Rank", False))
+rankView.heading("EURO Rank", text="EURO Rank", command = lambda: treeview_sort_column_int(rankView, "EURO Rank", False))
+rankView.heading("FIFA Rank", text="FIFA Rank", command=lambda : treeview_sort_column_int(rankView, "FIFA Rank", False))
+rankView.heading("Team Name", text="Team Name", command=lambda : treeview_sort_column_str(rankView, "Team Name", False))
+rankView.heading("Group", text="Group", command=lambda : treeview_sort_column_str(rankView, "Group", False))
 rankView.heading("Rank Score", text="Current Rank Score", command=lambda : treeview_sort_column_float(rankView, "Rank Score", False))
 
 
@@ -293,11 +309,11 @@ predictView.column("Team Two", width=150, minwidth=150, anchor=W)
 predictView.column("Predicted Result", width=150, minwidth=150, anchor=W)
 predictView.column("Real Result", width=150, minwidth=150, anchor=W)
 
-predictView.heading("Group", text="Group")
-predictView.heading("Team One",text="Team One")
-predictView.heading("Team Two", text="Team Two")
-predictView.heading("Predicted Result", text="Predicted Result")
-predictView.heading("Real Result", text="Real Result")
+predictView.heading("Group", text="Group", command=lambda : treeview_sort_column_str(predictView, "Group", False))
+predictView.heading("Team One",text="Team One", command=lambda : treeview_sort_column_str(predictView, "Team One", False))
+predictView.heading("Team Two", text="Team Two", command=lambda : treeview_sort_column_str(predictView, "Team Two", False))
+predictView.heading("Predicted Result", text="Predicted Result", command=lambda : treeview_sort_column_str(predictView, "Predicted Result", False))
+predictView.heading("Real Result", text="Real Result", command=lambda : treeview_sort_column_str(predictView, "Real Result", False))
 
 
 predictView.grid(row = 0, column = 1, pady = 50, padx = 2, rowspan = 4)

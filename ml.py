@@ -6,6 +6,7 @@ import numpy as np
 import tkinter.messagebox
 
 
+
 # training and testing arrays
 trainInputs = np.zeros((16,4))
 trainOutputs = np.zeros((16,1))
@@ -55,23 +56,26 @@ def simMatches(teamList, matches, predictView):
                 teamOne = teamList[y]
             if teamList[y].name == matches[x].teamTwo:
                 teamTwo = teamList[y]
+        try:
+                if abs((teamOne.rating) - (teamTwo.rating)) < 0.005:
+                    predictedWinner = "Draw"
+                    #print("DRAW PREDICTED!")
+                elif teamOne.rating > teamTwo.rating:
+                    predictedWinner = teamOne.name
+                    #print("PREDICTED WINNER: " + predictedWinner)
+                else:
+                    predictedWinner = teamTwo.name
+                    #print("PREDICTED WINNER: " + predictedWinner)
 
-        if abs((teamOne.rating) - (teamTwo.rating)) < 0.005:
-            predictedWinner = "Draw"
-            #print("DRAW PREDICTED!")
-        elif teamOne.rating > teamTwo.rating:
-            predictedWinner = teamOne.name
-            #print("PREDICTED WINNER: " + predictedWinner)
-        else:
-            predictedWinner = teamTwo.name
-            #print("PREDICTED WINNER: " + predictedWinner)
+                predictView.set(matchID, 'Predicted Result', str(predictedWinner))
 
-        predictView.set(matchID, 'Predicted Result', str(predictedWinner))
+                #print("REAL WINNER: " + matches[x].winner)
 
-        #print("REAL WINNER: " + matches[x].winner)
-
-        if predictedWinner == matches[x].winner:
-            correct += 1           
+                if predictedWinner == matches[x].winner:
+                    correct += 1
+        except AttributeError:
+                tkinter.messagebox.showinfo('Error:', 'Cannot perform rank generation until teams are loaded.')
+                break;
 
            
 
@@ -80,6 +84,7 @@ def simMatches(teamList, matches, predictView):
 
 # Function to simulate matches based on assigned FIFA Ranking
 def simFIFAMatches(teamList, matches, predictView, predictLabel):
+        
     total = len(matches)
     correct = 0
     perc = 0
@@ -104,29 +109,37 @@ def simFIFAMatches(teamList, matches, predictView, predictLabel):
                 teamOne = teamList[y]
             if teamList[y].name == matches[x].teamTwo:
                 teamTwo = teamList[y]
+        try:
+                if abs((teamOne.fifaRank) - (teamTwo.fifaRank)) <= 3:
+                    predictedWinner = "Draw"
+                    print("DRAW PREDICTED!")    
+                elif teamOne.fifaRank < teamTwo.fifaRank:
+                    predictedWinner = teamOne.name
+                    print("PREDICTED WINNER: " + predictedWinner)
+                else:
+                    predictedWinner = teamTwo.name
+                    print("PREDICTED WINNER: " + predictedWinner)
 
-        if abs((teamOne.fifaRank) - (teamTwo.fifaRank)) <= 3:
-            predictedWinner = "Draw"
-            print("DRAW PREDICTED!")    
-        elif teamOne.fifaRank < teamTwo.fifaRank:
-            predictedWinner = teamOne.name
-            print("PREDICTED WINNER: " + predictedWinner)
-        else:
-            predictedWinner = teamTwo.name
-            print("PREDICTED WINNER: " + predictedWinner)
+                print("REAL WINNER: " + matches[x].winner)
 
-        print("REAL WINNER: " + matches[x].winner)
+                predictView.set(matches[x].matchID, 'Predicted Result', str(predictedWinner))
 
-        predictView.set(matches[x].matchID, 'Predicted Result', str(predictedWinner))
-
-        if str(predictedWinner) == str(matches[x].winner):
-            correct += 1           
+                if str(predictedWinner) == str(matches[x].winner):
+                    correct += 1
+        except AttributeError:
+                tkinter.messagebox.showinfo('Error:', 'Cannot perform rank generation until teams are loaded.')
+                break;
 
     
-        
-    perc = (correct / total)  *  100
+    try:
+            perc = (correct / total)  *  100
+    except ZeroDivisionError:
+            tkinter.messagebox.showinfo('Error:', 'Cannot perform rank generation until team and match data are loaded.')
     
+
     predictLabel.configure(text = "Predict Rate: " + str(perc) + "%")
+
+
 
 def resultSearch(teamName, matchList):
     results = []
@@ -153,16 +166,16 @@ def resultSearch(teamName, matchList):
 def encode(teamList):
     print("encoding")
     for x in range(len(teamList)):
-        teamList[x].possession = (teamList[x].possession/teamList[x].matchesPlayed) / 100
-        teamList[x].onTarget = (teamList[x].onTarget /teamList[x].matchesPlayed) / 10
-        teamList[x].offTarget = (teamList[x].offTarget / teamList[x].matchesPlayed) /10
-        teamList[x].goalD = (teamList[x].goalsFor - teamList[x].goalsAgainst) / 10
+        teamList[x].possession = (teamList[x].possession/teamList[x].matchesPlayed) / 10
+        teamList[x].onTarget = (teamList[x].onTarget /teamList[x].matchesPlayed) / 5
+        teamList[x].offTarget = (teamList[x].offTarget / teamList[x].matchesPlayed) / 5
+        teamList[x].goalD = (teamList[x].goalsFor - teamList[x].goalsAgainst) / 100
     
 # Function for training sequence 
 def training(trainList, trainMatches, rankView, predictView, predictLabel):
 
-    model
 
+    model
     accuracyperc = 0
 
     # clears all teams from GUI table
@@ -193,12 +206,15 @@ def training(trainList, trainMatches, rankView, predictView, predictLabel):
 
 
     # assigns training outputs from previously searched results
-    for g in range(3):
+    try:
+            for g in range(3):
 
-        for i in range(len(trainList)):
-            trainOutputs[i][0] = trainList[i].form[g]
+                for i in range(len(trainList)):
+                    trainOutputs[i][0] = trainList[i].form[g]
 
-        model.fit(trainInputs, trainOutputs, epochs = 100)
+                model.fit(trainInputs, trainOutputs, epochs = 100)
+    except IndexError:
+            tkinter.messagebox.showinfo('Error:', 'Cannot perform rank generation until matches are loaded.')
         
     # displays ratings
     ratings = model.predict(trainInputs)
@@ -217,10 +233,16 @@ def training(trainList, trainMatches, rankView, predictView, predictLabel):
     print(ratings)
 
     # simulates matches to obtain prediction accuracy
-    
-    accuracyperc = simMatches(trainList, trainMatches, predictView)
+    try:        
+            accuracyperc = simMatches(trainList, trainMatches, predictView)
+    except ZeroDivisionError:
+            tkinter.messagebox.showinfo('Error:', 'Cannot perform rank generation until teams and matches are loaded.')
+            
+
 
     predictLabel.configure(text = "Predict Rate: " + str(accuracyperc) + "%")
+
+
     
 def testing(testList, testMatches, rankView, predictView, predictLabel):
 
@@ -266,9 +288,10 @@ def testing(testList, testMatches, rankView, predictView, predictLabel):
     try:
         accuracyperc = simMatches(testList, testMatches, predictView)
     except ZeroDivisionError:
-        tkinter.messagebox.showinfo('Error:', 'Cannot perform rank generation until teams and matches are loaded.')
+        tkinter.messagebox.showinfo('Error:', 'Cannot perform rank generation until training has been performed.')
                     
     predictLabel.configure(text = "Predict Rate: " + str(accuracyperc) + "%")
+
     
 def generate(teamList, matchList, rankView, predictView, predictLabel):
 
