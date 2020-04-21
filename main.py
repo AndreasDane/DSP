@@ -35,6 +35,7 @@ def treeview_sort_column_int(treeview, col, reverse):
 
     treeview.heading(col, command=lambda: treeview_sort_column_int(treeview, col, not reverse))
 
+# Function to sort a column by float
 def treeview_sort_column_float(treeview, col, reverse):
     tempList = [(treeview.set(item, col), item) for item in treeview.get_children('')] # creates copy of the column
     tempList.sort(key=lambda t: float(t[0]), reverse=reverse) # sorts column by float
@@ -44,6 +45,7 @@ def treeview_sort_column_float(treeview, col, reverse):
 
     treeview.heading(col, command=lambda: treeview_sort_column_float(treeview, col, not reverse))
 
+# Function to sort a column by string
 def treeview_sort_column_str(treeview, col, reverse):
     tempList = [(treeview.set(item, col), item) for item in treeview.get_children('')] # creates copy of the column
     tempList.sort(reverse=reverse) # sorts column alphabetically
@@ -94,12 +96,7 @@ def loadTeams():
             teamList[x].matchesPlayed = count
             
 
-            
-            # insert team into GUI table
-        
-            #print(rankID)
-
-    loadRanks()
+    loadRanks() # loads FIFA and Euro rank
 
     
 # Function to load matches from CSV and initialize objects and assign attributes from CSV.
@@ -127,7 +124,7 @@ def loadMatches():
 
                 print(column[0], column[1], column[2], column[3])
 
-    
+# function to assign FIFA Rankings and group
 def loadRanks():
 
         with open('Team Data\\teamconfig.csv', "r") as csvfile:
@@ -169,6 +166,7 @@ def sortMatches(matchList, testGroup):
     trainMatches.clear()
     testMatches.clear()
 
+
     for x in range(len(matchList)):
         if str(matchList[x].group) == str(testGroup):
             testMatches.append(matchList[x])
@@ -176,7 +174,7 @@ def sortMatches(matchList, testGroup):
             trainMatches.append(matchList[x])
 
 
-# Function to edit training/testing settings.
+# Function to view system settings.
 def ViewSettingsPrompt():
     
     settings = tk.Toplevel(mainMenu)
@@ -191,6 +189,7 @@ def ViewSettingsPrompt():
         label1.pack(anchor=N)
         label2.pack(anchor=N)
 
+# function to display system help menu
 def helpPrompt():
     helpInfo = tk.Toplevel(mainMenu)
     
@@ -231,13 +230,13 @@ helpMenu.add_command(label="Help", command=helpPrompt)
 menubar.add_cascade(label="Help", menu=helpMenu)
 
 
-# Button Creations
+# Button Creation
 loadTeamsBt = Button(mainMenu, text = "Load Team Data", command = loadTeams)
 loadMatchesBt = Button(mainMenu, text = "Load Matches", command = loadMatches) 
 trainingBt = Button(mainMenu, text = "Training", command = lambda: [ initializeTraining(), training(trainList, trainMatches, rankView, predictView, predictLabel)])
 testingBt = Button(mainMenu, text = "Testing", command = lambda: testing(testList, testMatches, rankView, predictView, predictLabel))
 encodeBt = Button(mainMenu, text = "Encode", command= lambda: encode(teamList))
-editSettingsBt = Button(mainMenu, text="Settings", command = ViewSettingsPrompt)
+SettingsBt = Button(mainMenu, text="View Settings", command = ViewSettingsPrompt)
 generateBt = Button(mainMenu, text="Generate", command = lambda: generate(teamList, matchList, rankView, predictView, predictLabel))
 simFifaBt = Button(mainMenu, text="Simulate with FIFA", command = lambda: simFIFAMatches(teamList, matchList, predictView, predictLabel))
 
@@ -245,7 +244,7 @@ simFifaBt = Button(mainMenu, text="Simulate with FIFA", command = lambda: simFIF
 # Button Placement
 loadTeamsBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = N)
 loadMatchesBt.grid(row = 2, column = 0, pady = 50, padx = 2, sticky = S)    
-editSettingsBt.grid(row = 3, column = 0, pady=50, padx=2, sticky = N)
+SettingsBt.grid(row = 3, column = 0, pady=50, padx=2, sticky = N)
 encodeBt.grid(row = 3, column = 0, pady = 50, padx = 2, sticky = S)
 trainingBt.grid(row = 4, column = 0, pady = 50, padx = 2, sticky = N)
 testingBt.grid(row = 4, column = 0, pady = 50, padx = 2, sticky = S)
@@ -301,7 +300,7 @@ predictColumns = ("Group", "Team One", "Team Two", "Predicted Result", "Real Res
 predictView = Treeview(predictMenu, height = 10, yscrollcommand = yscrollbar.set, columns=predictColumns)
 
 
-
+# Prediction table column setup
 predictView['show'] = 'headings'
 predictView.column("Group", width=65, anchor=W)
 predictView.column("Team One", width=150, minwidth=150, anchor=W)

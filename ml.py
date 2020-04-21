@@ -18,13 +18,13 @@ completeInputs = np.zeros((20,4))
 # Creates a neural network model
 def create_model():
         
-	# creates model layers
 	model = Sequential()
 
-	
+	# add layers
 	model.add(Dense(2, input_dim=4, activation='tanh'))
 	model.add(Dense(1, activation='sigmoid'))
-	
+
+	# loss and optimization function
 	model.compile(loss='binary_crossentropy', optimizer='adam')
 	return model
 
@@ -95,10 +95,7 @@ def simFIFAMatches(teamList, matches, predictView, predictLabel):
     for l in range(len(matches)):
         predictView.insert('', 'end', iid=matches[l].matchID, values=(matches[l].group, matches[l].teamOne, matches[l].teamTwo , 0, matches[l].winner))
 
-
-    # assembles results of teams for use in training outputs
-
-    
+    # for every match, find and compare winner
     for x in range(len(matches)):
         teamOne = 0
         teamTwo = 0
@@ -140,7 +137,7 @@ def simFIFAMatches(teamList, matches, predictView, predictLabel):
     predictLabel.configure(text = "Predict Rate: " + str(perc) + "%")
 
 
-
+# function to search for results for given team in a list of matches
 def resultSearch(teamName, matchList):
     results = []
     matchesFound = []
