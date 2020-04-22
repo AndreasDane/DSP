@@ -23,14 +23,6 @@ class match:
         self.winner = winner
         self.group = group
         self.matchID = matchID
-    
-class rankingTable:
-    def __init__(self):
-        self.rank = 0
-        self.fifaRank = 0
-        self.teamName = ''
-        self.score = 0
-
 
 
     

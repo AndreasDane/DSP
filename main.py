@@ -2,11 +2,17 @@ import tkinter as tk
 from tkinter import *
 from tkinter.ttk import *
 from ml import *
-from teams import *
+from classes import *
 import csv
 import random
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""
+Neural Network Football Ranking System
 
+Edited: 22 April 2020
+Author: Andreas Dane 
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""
 ##################### loading #####################
 
 # Initialize variables

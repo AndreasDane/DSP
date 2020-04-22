@@ -5,6 +5,13 @@ from keras import backend as K
 import numpy as np
 import tkinter.messagebox
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""
+Neural Network Football Ranking System
+
+Edited: 22 April 2020
+Author: Andreas Dane 
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
 # training and testing arrays
